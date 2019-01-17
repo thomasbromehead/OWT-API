@@ -68,9 +68,15 @@ class Skill(Base):
     def validate_level(self, key, level):
         if level < 0 or level > 5:
             raise AssertionError("The level must be between 0 and 5")
-        if not level:
+        if not level or level == "":
             raise AssertionError("No level provided")
         return level
+
+    @validates('name')
+    def validate_name(self, key, name):
+        if not name or name == "":
+            raise AssertionError("Please provide a name for this skill")
+        return name
 
 
 engine = create_engine('sqlite:///contacts.db')

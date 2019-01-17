@@ -5,6 +5,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy import create_engine
 import time
+import json
 
 from flask_httpauth import HTTPBasicAuth
 
@@ -110,8 +111,27 @@ def get_contact(id):
 
 
 @app.route('/api/v1/skills', methods=['GET', 'POST'])
-def do_this_too():
-    return "hey"
+def get_or_make_skill():
+    if request.method == "GET":
+        "I'm a get"
+        skills = session.query(Skill).all()
+        if len(skills) == 0:
+            return "No skills added yet, how sad!"
+    return jsonify(skills=[skill.serialize for skill in skills])
+    if request.method == "POST":
+        if request.json.get('name'):
+            name = request.json.get('name')
+            print("Name:", name)
+        if request.json.get('level'):
+            level = request.json.get('level')
+            print("Level ", level)
+        skill = Skill(name=name, level=level)
+        session.add(skill)
+        session.commit()
+        return jsonify(skill.serialize), 201
+
+
+# curl -i -H "Content-Type: application/json" -d '{"name":"javascript","level":5}' localhost:5000/api/v1/skills
 
 
 if __name__ == '__main__':
