@@ -113,7 +113,6 @@ def get_contact(id):
 @app.route('/api/v1/skills', methods=['GET', 'POST'])
 def get_or_make_skill():
     if request.method == "GET":
-        "I'm a get"
         skills = session.query(Skill).all()
         if len(skills) == 0:
             return "No skills added yet, how sad!"
@@ -129,6 +128,31 @@ def get_or_make_skill():
         session.add(skill)
         session.commit()
         return jsonify(skill.serialize), 201
+
+
+@app.route('/api/v1/skills/<int:id>', methods=['GET', 'PUT', 'DELETE'])
+def get_skill(id):
+    skill = session.query(Skill).filter_by(id=id).one()
+    if skill is not None:
+        if request.method == "GET":
+            print("Skill", skill)
+            return jsonify(skill=skill.serialize)
+
+        elif request.method == "PUT":
+            name = request.json.get("name")
+            level = request.json.get("level")
+            if name:
+                skill.name = name
+            if level:
+                skill.level = level
+            session.commit()
+            return jsonify(skill=skill.serialize)
+
+        elif request.method == "DELETE":
+            session.delete(skill)
+            session.commit()
+            return "{} was deleted successfully!".format(skill.name.capitalize())
+    return "No skill found with ID {}".format(id)
 
 
 # curl -i -H "Content-Type: application/json" -d '{"name":"javascript","level":5}' localhost:5000/api/v1/skills
