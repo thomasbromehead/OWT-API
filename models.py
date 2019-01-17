@@ -34,6 +34,7 @@ class Contact(Base):
             'id': self.id,
             'first-name': self.first_name,
             'last-name': self.last_name,
+            'full-name': self.full_name,
             'address': self.address,
             'email': self.email,
             'mobile': self.mobile,
