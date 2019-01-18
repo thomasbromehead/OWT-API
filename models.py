@@ -38,8 +38,9 @@ class Contact(Base):
             'address': self.address,
             'email': self.email,
             'mobile': self.mobile,
-            'skills': self.skills
+            'skills': [skill.serialize for skill in self.skills]
         }
+
 
     @validates('email')
     def validate_email(self, key, email):
@@ -76,7 +77,7 @@ class Skill(Base):
     def validate_name(self, key, name):
         if not name or name == "":
             raise AssertionError("Please provide a name for this skill")
-        return name
+        return name.lower()
 
 
 engine = create_engine('sqlite:///contacts.db')

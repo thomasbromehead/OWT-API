@@ -71,9 +71,14 @@ def get_make_contacts():
 @app.route('/api/v1/contacts/<int:id>', methods=['GET', 'PUT', 'DELETE'])
 def get_contact(id):
     contact = session.query(Contact).filter_by(id=id).first()
-
     if request.method == "GET":
         if contact is not None:
+            print("Contact Skills: ", contact.skills)
+            skill1 = session.query(Skill).filter_by(id=1).first()
+            print("Skill1: ", skill1.serialize)
+            contact.skills.append(skill1)
+            session.commit()
+            print("Contact Skills after appending manually: ", contact.skills)
             return jsonify(contact.serialize)
         return "No contact with id {} was found!".format(id)
 
@@ -87,7 +92,7 @@ def get_contact(id):
         skills = request.json.get('skills')
         print('Email: ', email)
         print('Full_name: ', full_name)
-        print('Skills: ', skills)
+        print('Skills Before setting them: ', contact.skills)
         if first_name:
             contact.first_name = first_name
         if last_name:
@@ -99,10 +104,13 @@ def get_contact(id):
         if mobile:
             contact.mobile = mobile
         if skills:
-            contact.skills = skills
-        print('JSON: ', request.json)
-        session.commit()
-        return jsonify(contact=contact.serialize)
+            print("Contact Skills Before Appending :", contact.skills)
+            for name in skills:
+                contact.skills.append(session.query(Skill).filter_by(name=str(name.lower())).one())
+            print("Contact Skills after appending: ", contact.skills)
+            session.commit()
+            print("Contact Skills after appending: ", contact.skills)
+        return jsonify(contact.serialize)
 
     elif request.method == "DELETE":
         session.delete(contact)
@@ -116,10 +124,11 @@ def get_or_make_skill():
         skills = session.query(Skill).all()
         if len(skills) == 0:
             return "No skills added yet, how sad!"
-    return jsonify(skills=[skill.serialize for skill in skills])
-    if request.method == "POST":
+        return jsonify(skills=[skill.serialize for skill in skills])
+
+    elif request.method == "POST":
         if request.json.get('name'):
-            name = request.json.get('name')
+            name = request.json.get('name').lower().strip()
             print("Name:", name)
         if request.json.get('level'):
             level = request.json.get('level')
@@ -142,9 +151,9 @@ def get_skill(id):
             name = request.json.get("name")
             level = request.json.get("level")
             if name:
-                skill.name = name
+                skill.name = name.lower().strip()
             if level:
-                skill.level = level
+                skill.level = level.lower().strip()
             session.commit()
             return jsonify(skill=skill.serialize)
 
@@ -152,10 +161,14 @@ def get_skill(id):
             session.delete(skill)
             session.commit()
             return "{} was deleted successfully!".format(skill.name.capitalize())
+
     return "No skill found with ID {}".format(id)
 
 
 # curl -i -H "Content-Type: application/json" -d '{"name":"javascript","level":5}' localhost:5000/api/v1/skills
+# curl -H "Content-type:application/json" --data '{"contact":{"first_name":"Thomas", "last_name":"Bromehead", "full_name":"Thomas Ian Bromehead", "email": "t_bromeead@yahoo.fr"}}' localhost:5000/api/v1/contacts
+
+# 'skills': [<models.Skill object at 0x7f7425787c90>, <models.Skill object at 0x7f7425787d10>, <models.Skill object at 0x7f7425787d90>],
 
 
 if __name__ == '__main__':
