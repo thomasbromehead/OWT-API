@@ -13,16 +13,16 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.4470743">
+    <splitter split-orientation="horizontal" split-proportion="0.547666">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/views.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="451">
-                  <caret line="169" lean-forward="true" selection-start-line="169" selection-end-line="169" />
+                <state relative-caret-position="199">
+                  <caret line="205" lean-forward="true" selection-start-line="205" selection-end-line="205" />
                   <folding>
-                    <element signature="e#0#39#0" expanded="true" />
+                    <element signature="e#0#45#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
@@ -35,8 +35,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/models.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="540">
-                  <caret line="36" column="13" selection-start-line="36" selection-start-column="13" selection-end-line="36" selection-end-column="13" />
+                <state relative-caret-position="619">
+                  <caret line="116" lean-forward="true" selection-start-line="116" selection-end-line="116" />
                   <folding>
                     <element signature="e#0#65#0" expanded="true" />
                   </folding>
@@ -126,22 +126,22 @@
     </layout>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/models.py">
+    <entry file="file://$PROJECT_DIR$/views.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="540">
-          <caret line="36" column="13" selection-start-line="36" selection-start-column="13" selection-end-line="36" selection-end-column="13" />
+        <state relative-caret-position="199">
+          <caret line="205" lean-forward="true" selection-start-line="205" selection-end-line="205" />
           <folding>
-            <element signature="e#0#65#0" expanded="true" />
+            <element signature="e#0#45#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/views.py">
+    <entry file="file://$PROJECT_DIR$/models.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="451">
-          <caret line="169" lean-forward="true" selection-start-line="169" selection-end-line="169" />
+        <state relative-caret-position="619">
+          <caret line="116" lean-forward="true" selection-start-line="116" selection-end-line="116" />
           <folding>
-            <element signature="e#0#39#0" expanded="true" />
+            <element signature="e#0#65#0" expanded="true" />
           </folding>
         </state>
       </provider>
