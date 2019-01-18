@@ -165,8 +165,16 @@ def get_skill(id):
     return "No skill found with ID {}".format(id)
 
 
+@app.route('/api/v1/skills/<string:name>')
+def who_has_that_skill(name):
+    skill = session.query(Skill).filter_by(name=name).first()
+    contacts = skill.contacts
+    print('Contacts with these skills: ', contacts)
+    return jsonify(contacts_with_these_skills=[contact.serialize for contact in contacts])
+
+
 # curl -i -H "Content-Type: application/json" -d '{"name":"javascript","level":5}' localhost:5000/api/v1/skills
-# curl -H "Content-type:application/json" --data '{"contact":{"first_name":"Thomas", "last_name":"Bromehead", "full_name":"Thomas Ian Bromehead", "email": "t_bromeead@yahoo.fr"}}' localhost:5000/api/v1/contacts
+# curl -H "Content-type:application/json" --data '{"contact":{"first_name":"Henri", "last_name":"Larruat", "full_name":"Henri Matthieu Larruat", "email": "henri@gmail.fr"}}' localhost:5000/api/v1/contacts
 
 # 'skills': [<models.Skill object at 0x7f7425787c90>, <models.Skill object at 0x7f7425787d10>, <models.Skill object at 0x7f7425787d90>],
 
