@@ -36,7 +36,7 @@ def verify_password(username_or_token, password):
 
 
 @app.route('/api/v1/token')
-# @auth.login_required
+@auth.login_required
 def get_auth_token():
     token = g.user.generate_auth_token()
     return jsonify({'token': token.decode('ascii')})
@@ -66,7 +66,7 @@ def new_user():
 
 
 @app.route('/api/v1/contacts', methods=['GET', 'POST'])
-# @auth.login_required
+@auth.login_required
 def get_make_contacts():
     if request.method == "GET":
         contacts = session.query(Contact).all()
@@ -102,7 +102,7 @@ def get_make_contacts():
         if request.json.get('contact').get('skills'):
             skills = request.json.get('contact').get('skills')
         else:
-            skills = None
+            skills = []
         print("JSON: ", request.json)
         contact = Contact(first_name=first_name, last_name=last_name,
                           full_name=full_name, email=email,
@@ -116,7 +116,7 @@ def get_make_contacts():
 
 
 @app.route('/api/v1/contacts/<int:id>', methods=['GET', 'PUT', 'DELETE'])
-# @auth.login_required
+@auth.login_required
 def get_contact(id):
         contact = session.query(Contact).filter_by(id=id).first()
         try:
