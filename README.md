@@ -211,10 +211,10 @@ curl localhost:5000/api/v1/skills/python
     {
       "address": null,
       "email": "tom@yahoo.com",
-      "first-name": "Henri",
-      "full-name": "Henri Matthieu Larrié",
+      "first-name": "Tom",
+      "full-name": "Doe",
       "id": 2,
-      "last-name": "Larrié",
+      "last-name": "Doe",
       "mobile": null,
       "skills": [
         {
