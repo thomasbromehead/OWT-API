@@ -1,0 +1,331 @@
+openapi: "3.0.0"
+
+info:
+  version: "1.0"
+  title: OWT-Contacts and Skills API 🇨🇭 T.Bromehead 01/2019
+  description: "We offer a free API that provides contacts and skills for tech people."
+  contact:
+    name: API team
+    url: https://ourproject.com
+
+servers:
+  - url: https://api.sunrise-sunset.org
+    description: Production server
+
+paths:
+    /api/v1/users:
+      post:
+        summary: "Create a new user, needed as some routes are protected"
+        description: ""
+        operationId: createUser
+        parameters:
+          - name: username
+            in: body
+            description: "String of characters"
+            required: true
+            schema:
+              type: string
+            example: "johndoe"
+
+          - name: password
+            in: body
+            description: "Create a password for the user, min length 5 characters"
+            required: true
+            schema:
+              type: string
+            example: "anticonstitutionnellement"
+
+    /api/v1/token:
+      get:
+        summary: "Get a token"
+        description: "Access protected routes without having to login again, expiration time is 10 minutes"
+        operationId: createToken
+      200:
+        description: "Token Generated, authenticate first then get token"
+        content:
+          application/json:
+            schema:
+              $ref:
+#         {
+#   "token": "eyJhbGciOiJIUzUxMiIsImV4cCI6MTU0NzkwODk5MywiaWF0IjoxNTQ3OTA4MzkzfQ.eyJpZCI6MX0.4BKLFH3mwCQBCzn8afsF6GEicQC86hDwOkf1Rue5I-1EEaacPmOC7wC7BYN2gzeG4ZtG_GV8fo1G0kZO3CdEAQ"
+# }
+
+    /api/v1/contacts:
+      get: 
+        summary: "Get all contacts in your DB"
+        operationID: retrieveContacts
+        responses: 
+          200:
+            description: Retrieved All Contacts
+            content:
+              application/json:
+                schema:
+                  $ref:
+      post:
+        summary: "Create a contact"
+        description: "Create a contact, required fields are first name, last name and full name, rest is up to you.\n
+        ### 1. First Name \n
+        ### 2. Last Name \n
+        ### 3 Full Name\n
+        ### 4. Email\n
+        ### 5. Address\n
+        ### 6. Mobile\n
+        ### 7. Skills"
+        operationID: createContact
+        consumes: 
+          - application/json
+        produces:
+          - application/json
+        parameters:
+          - name: first_name
+            in: body
+            description: "String of characters"
+            required: true
+            schema:
+              type: string
+            example: "John"
+
+          - name: last_name
+            in: body
+            required: true
+            schema:
+              type: string
+
+          - name: full_name
+            in: body
+            required: true
+            schema:
+              type: string
+            example: "John Martin Doe"
+
+          - name : email
+            in: body
+            schema:
+              type: string
+            example: "john.doe@doeiseverywhere.com"
+
+          - name: address
+            in: body
+            schema:
+              type: string
+            example: "4275 95th Place SE, Mercer Island, WA 98040, USA"
+
+          - name: mobile
+            in: body
+            schema: 
+              type: string
+            example: "++33 789 920 019"
+
+          - name: skills
+            description: "Pass in a single or an array of skills which must exist obviously!"
+            in: body
+            schema: 
+              type: array
+            example: "['javascript', 'python', 'sql']"
+      
+    /api/v1/contact/{contactId}:
+      get:
+        summary: "Get a contact's detail"
+        consumes: 
+          - application/json
+        produces: 
+          - application/json
+        parameters:
+          - name: id
+            in: path
+            schema:
+              type: integer
+              format: int64
+        operationID: getContact
+        responses:
+          200:
+            description: Successfully retrieved contact's details
+            content:
+              application/json:
+              schema: 
+              $ref: 
+          401:
+            description: Unauthorized access
+        
+      put:
+        summary: Modify contact with id {contactId}
+        description: "## Modify any attributes of the contact, must be logged in"
+        operationId: updateContact
+        parameters:
+          - name: first_name
+            schema:
+              type: string
+            in: body
+
+          - name: last_name
+            schema: 
+              type: string
+            in: body
+
+          - name: full_name
+            schema: 
+              type: string
+            in: body
+
+          - name: email
+            schema:
+              type: string
+            in: body
+
+          - name: address
+            schema: 
+              type: string
+            in: body
+
+          - name: mobile
+            schema: 
+              type: string
+            in: body
+
+          - name: skills
+            description: "### Pass in an array of strings corresponding to skill names: [\"javascript\", \"python\"]"
+            schema: 
+              type: array
+            in: body
+        
+        responses:
+          200:
+            description: "Contact Updated Succesfully"
+          400:
+            description: "Couldn't find person with id {contactId}"
+            
+
+      delete:
+        summary: "Delete contact with id {contactId}. Must be logged in"
+        description: " Example : ```curl -I --request DELETE /api/v1/contact/1```"
+        operationId: deleteContact
+        responses:
+          200:
+            description: "Contact deleted!"
+          400:
+            description: "Couldn't find person with id {contactId}"
+    
+    /api/v1/skills:
+      get:
+        summary: "Get all skills available"
+        description: "### List all programming skills:\ 
+          ```curl www.example.com/api/v1/skills```"
+        responses:
+          200:
+            description: "Succesfully retrieved all skills"
+      post:
+        summary: "Create skills"
+        description: "## Create skills, parameters list as follows: \n 
+        ### 1. Name\n
+        ### 2. Level: 1 to 5 inclusive"
+        operationId: createSkill
+        parameters:
+          - name: "Name"
+            summary: "Self-exaplantory"
+            schema: 
+              type: string
+            in: body
+          - name: "Level"
+            summary: "Skill level from 1 to 5 inclusive"
+            schema:
+              type: int
+              format: int32
+            in: body
+        responses:
+          201: 
+            description: "Skill created successfully"
+
+    /api/v1/skills/{skillId}:
+      get:
+        summary: "Get a list of skills available"
+        description: "As simple as it gets :\n
+        ```curl www.example.com/api/v1/skills/1```"
+        operationId: readSkill
+        parameters:
+          - name: id
+            schema: 
+              type: int
+              format: int32
+            in: path
+        responses:
+          200:
+            description: "Skill found"
+
+
+      put:
+        summary: "Modify a given skill"
+        description: "### Example: ``` curl --request PUT -H 'content-type:application/json --data '{\"name\":\"typescript\"}' www.example.com/api/v1/skills/2``` "
+        operationId: updateSkill
+        parameters:
+          - name: name
+            schema: 
+              type: string
+            in: body
+            example: "Typescript"
+
+          - name: level
+            schema:
+              type: int
+              format: int32
+            in: body
+            example: "4"
+        responses:
+          200:
+          400:
+        
+      delete:
+        summary: "Delete a given skill"
+        description: "### Example: ```curl --request DELETE localhost:5000/api/v1/skills/{skillId}```"
+        operationId: deleteSkill
+        parameters:
+          - name: Id
+            in: path
+            schema:
+              type: int
+              format: int32
+            example: "4"
+        responses: 
+          200:
+          400:
+        
+    /api/v1/skills/{skillName}:
+      get:
+        summary: "Get a list of contacts who have that skill"
+        description: "### Example: ``` curl www.example.com/api/v1/skills/typescript```"
+        operationId: skilledContacts
+        parameters:
+          - name: skillName
+            schema: 
+              type: string
+            in: path
+        responses:
+          200:
+          400:      
+
+
+
+components:
+  schemas:
+    SunriseSunsetResponse:
+      title: Response
+      type: object
+      properties:
+        user:
+          type: object
+          properties:
+            username:
+              type: string
+              description: username
+              example: 'johndoe'
+        status:
+          type: string
+          description: "Four possible statuses:\n
+            \n* `OK`: No errors occurred.
+            \n* `INVALID_REQUEST`: Either lat or lng parameters are missing or invalid.
+            \n* `INVALID_DATE`: The date parameter is missing or invalid;
+            \n* `UNKNOWN_ERROR`: The request could not be processed due to a server error. The request may succeed if you try again."
+          example: "OK"
+
+externalDocs:
+  description: Documentation and main site
+  url: https://sunrise-sunset.org/api

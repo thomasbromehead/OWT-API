@@ -7,6 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.pool import SingletonThreadPool
 import time
 import json
+from sqlalchemy.orm.exc import UnmappedInstanceError
 
 from flask_httpauth import HTTPBasicAuth
 
@@ -36,7 +37,7 @@ def verify_password(username_or_token, password):
 
 
 @app.route('/api/v1/token')
-@auth.login_required
+# @auth.login_required
 def get_auth_token():
     token = g.user.generate_auth_token()
     print("Token= ", token)
@@ -116,56 +117,56 @@ def get_make_contacts():
 
 
 @app.route('/api/v1/contacts/<int:id>', methods=['GET', 'PUT', 'DELETE'])
+# @auth.login_required
 def get_contact(id):
-    contact = session.query(Contact).filter_by(id=id).first()
-    if request.method == "GET":
-        if contact is not None:
-            print("Contact Skills: ", contact.skills)
-            skill1 = session.query(Skill).filter_by(id=1).first()
-            print("Skill1: ", skill1.serialize)
-            contact.skills.append(skill1)
-            session.commit()
-            print("Contact Skills after appending manually: ", contact.skills)
-            return jsonify(contact.serialize)
-        return "No contact with id {} was found!".format(id)
+        contact = session.query(Contact).filter_by(id=id).first()
+        try:
+            if request.method == "GET":
+                return jsonify(contact.serialize)
 
-    elif request.method == "PUT":
-        first_name = request.json.get('first_name')
-        last_name = request.json.get('last_name')
-        full_name = request.json.get('first_name')
-        email = request.json.get('email')
-        address = request.json.get('address')
-        mobile = request.json.get('mobile')
-        skills = request.json.get('skills')
-        print('Email: ', email)
-        print('Full_name: ', full_name)
-        print('Skills Before setting them: ', contact.skills)
-        if first_name:
-            contact.first_name = first_name
-        if last_name:
-            contact.last_name = last_name
-        if full_name:
-            contact.full_name = full_name
-        if address:
-            contact.address = address
-        if mobile:
-            contact.mobile = mobile
-        if skills:
-            print("Contact Skills Before Appending :", contact.skills)
-            for name in skills:
-                contact.skills.append(session.query(Skill).filter_by(name=str(name.lower())).one())
-            print("Contact Skills after appending: ", contact.skills)
-            session.commit()
-            print("Contact Skills after appending: ", contact.skills)
-        return jsonify(contact.serialize)
+            elif request.method == "PUT":
+                first_name = request.json.get('first_name')
+                last_name = request.json.get('last_name')
+                full_name = request.json.get('first_name')
+                email = request.json.get('email')
+                address = request.json.get('address')
+                mobile = request.json.get('mobile')
+                skills = request.json.get('skills')
+                if first_name:
+                    contact.first_name = first_name
+                if last_name:
+                    contact.last_name = last_name
+                if full_name:
+                    contact.full_name = full_name
+                if address:
+                    contact.address = address
+                if email:
+                    contact.email = email
+                if mobile:
+                    contact.mobile = mobile
+                if skills:
+                    for name in skills:
+                        contact.skills.append(session.query(Skill).filter_by(name=str(name.lower())).one())
+                    session.commit()
+                return (jsonify({"Message":"Contact updated successfully"}, contact.serialize), 200)
 
-    elif request.method == "DELETE":
-        session.delete(contact)
-        session.commit()
-        return "Contact deleted!"
+            elif request.method == "DELETE":
+                print("In delete")
+                session.delete(contact)
+                session.commit()
+                return "Contact deleted!", 200
+        except AttributeError:
+            print(UnmappedInstanceError)
+            return "Couldn't find person with id {}".format(id), 400 # Bad Request
+        # except UnmappedInstanceError():
+        #     print("unmapped")
+        #     return "Couldn't find person with id {}".format(id), 400 
+
+        
 
 
 @app.route('/api/v1/skills', methods=['GET', 'POST'])
+# @auth.login_required
 def get_or_make_skill():
     if request.method == "GET":
         skills = session.query(Skill).all()
@@ -187,27 +188,32 @@ def get_or_make_skill():
 
 
 @app.route('/api/v1/skills/<int:id>', methods=['GET', 'PUT', 'DELETE'])
+# @auth.login_required
 def get_skill(id):
     skill = session.query(Skill).filter_by(id=id).one()
-    if skill is not None:
-        if request.method == "GET":
-            print("Skill", skill)
-            return jsonify(skill=skill.serialize)
+    if skill:
+        try:
+            if request.method == "GET":
+                print("Skill", skill)
+                return jsonify(skill=skill.serialize)
 
-        elif request.method == "PUT":
-            name = request.json.get("name")
-            level = request.json.get("level")
-            if name:
-                skill.name = name.lower().strip()
-            if level:
-                skill.level = level.lower().strip()
-            session.commit()
-            return jsonify(skill=skill.serialize)
+            elif request.method == "PUT":
+                name = request.json.get("name")
+                level = request.json.get("level")
+                if name:
+                    skill.name = name.lower().strip()
+                if level:
+                    skill.level = level.lower().strip()
+                session.commit()
+                return jsonify(skill=skill.serialize)
 
-        elif request.method == "DELETE":
-            session.delete(skill)
-            session.commit()
-            return "{} was deleted successfully!".format(skill.name.capitalize())
+            elif request.method == "DELETE":
+                session.delete(skill)
+                session.commit()
+                return "{} was deleted successfully!".format(skill.name.capitalize())
+        except SQLAlchemyError as e:
+            error = str(e.__dict['orig'])
+            return error
 
     return "No skill found with ID {}".format(id)
 
