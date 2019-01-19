@@ -7,7 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.pool import SingletonThreadPool
 import time
 import json
-from sqlalchemy.orm.exc import UnmappedInstanceError
+from sqlalchemy.orm.exc import UnmappedInstanceError, NoResultFound
 
 from flask_httpauth import HTTPBasicAuth
 
@@ -32,7 +32,6 @@ def verify_password(username_or_token, password):
         if not user or not user.verify_password(password):
             return False
     g.user = user
-    print("G USER: ", g.user)
     return True
 
 
@@ -40,7 +39,6 @@ def verify_password(username_or_token, password):
 # @auth.login_required
 def get_auth_token():
     token = g.user.generate_auth_token()
-    print("Token= ", token)
     return jsonify({'token': token.decode('ascii')})
 
 
@@ -57,13 +55,14 @@ def new_user():
         print
         "existing user"
         user = session.query(User).filter_by(username=username).first()
-        return jsonify({'message': 'user already exists'}), 200
+        return jsonify(existing_user = {'message': 'user already exists'}), 200
 
     user = User(username=username)
     user.hash_password(password)
     session.add(user)
     session.commit()
-    return jsonify({'username': user.username}), 201
+    return jsonify(successfully_created_user = {'username': user.username}), 201
+
 
 
 @app.route('/api/v1/contacts', methods=['GET', 'POST'])
@@ -102,18 +101,18 @@ def get_make_contacts():
             mobile = None
         if request.json.get('contact').get('skills'):
             skills = request.json.get('contact').get('skills')
-            print("Skills ", skills)
         else:
             skills = None
         print("JSON: ", request.json)
         contact = Contact(first_name=first_name, last_name=last_name,
                           full_name=full_name, email=email,
-                          mobile=mobile)
+                          mobile=mobile, skills = skills)
         print("Contact: ", contact)
         print("Skills: ", contact.skills)
         session.add(contact)
         session.commit()
         return jsonify(contact=contact.serialize), 201
+
 
 
 @app.route('/api/v1/contacts/<int:id>', methods=['GET', 'PUT', 'DELETE'])
@@ -151,13 +150,12 @@ def get_contact(id):
                 return (jsonify({"Message":"Contact updated successfully"}, contact.serialize), 200)
 
             elif request.method == "DELETE":
-                print("In delete")
                 session.delete(contact)
                 session.commit()
                 return "Contact deleted!", 200
         except AttributeError:
             print(UnmappedInstanceError)
-            return "Couldn't find person with id {}".format(id), 400 # Bad Request
+            return "Couldn't find person with id {}".format(id), 404 # Bad Request
         # except UnmappedInstanceError():
         #     print("unmapped")
         #     return "Couldn't find person with id {}".format(id), 400 
@@ -177,10 +175,8 @@ def get_or_make_skill():
     elif request.method == "POST":
         if request.json.get('name'):
             name = request.json.get('name').lower().strip()
-            print("Name:", name)
         if request.json.get('level'):
             level = request.json.get('level')
-            print("Level ", level)
         skill = Skill(name=name, level=level)
         session.add(skill)
         session.commit()
@@ -192,29 +188,23 @@ def get_or_make_skill():
 def get_skill(id):
     skill = session.query(Skill).filter_by(id=id).one()
     if skill:
-        try:
-            if request.method == "GET":
-                print("Skill", skill)
-                return jsonify(skill=skill.serialize)
+        if request.method == "GET":
+            return jsonify(skill=skill.serialize)
 
-            elif request.method == "PUT":
-                name = request.json.get("name")
-                level = request.json.get("level")
-                if name:
-                    skill.name = name.lower().strip()
-                if level:
-                    skill.level = level.lower().strip()
-                session.commit()
-                return jsonify(skill=skill.serialize)
+        elif request.method == "PUT":
+            name = request.json.get("name")
+            level = request.json.get("level")
+            if name:
+                skill.name = name.lower().strip()
+            if level:
+                skill.level = level.lower().strip()
+            session.commit()
+            return jsonify(skill=skill.serialize)
 
-            elif request.method == "DELETE":
-                session.delete(skill)
-                session.commit()
-                return "{} was deleted successfully!".format(skill.name.capitalize())
-        except SQLAlchemyError as e:
-            error = str(e.__dict['orig'])
-            return error
-
+        elif request.method == "DELETE":
+            session.delete(skill)
+            session.commit()
+            return "{} was deleted successfully!".format(skill.name.capitalize())
     return "No skill found with ID {}".format(id)
 
 
@@ -222,14 +212,28 @@ def get_skill(id):
 def who_has_that_skill(name):
     skill = session.query(Skill).filter_by(name=name).first()
     contacts = skill.contacts
-    print('Contacts with these skills: ', contacts)
     return jsonify(contacts_with_these_skills=[contact.serialize for contact in contacts])
 
+# Create a skill
+# curl -i -H "Content-Type: application/json" -d '{"name":"jacript","level":5}' localhost:5000/api/v1/skills
+# --------------------
 
-# curl -i -H "Content-Type: application/json" -d '{"name":"javascript","level":5}' localhost:5000/api/v1/skills
+# Create a contact
 # curl -H "Content-type:application/json" --data '{"contact":{"first_name":"Henri", "last_name":"Larruat", "full_name":"Henri Matthieu Larruat", "email": "henri@gmail.fr"}}' localhost:5000/api/v1/contacts
 
-# 'skills': [<models.Skill object at 0x7f7425787c90>, <models.Skill object at 0x7f7425787d10>, <models.Skill object at 0x7f7425787d90>],
+# --------------------
+# Modify the skill to correct spelling
+# curl --request PUT -H "Content-type:application/json" --data '{"name":"javascript"}' localhost:5000/api/v1/skills/1
+
+# --------------------
+# Modify the contact by adding him some kills
+# curl -H "Content-type:application/json" --data '{"skills": ["javascript"]}' localhost:5000/api/v1/contacts/1
+
+# --------------------
+# Get contacts who are skilled in JS
+# curl localhost:5000/api/v1/skills/javascript
+
+
 
 
 if __name__ == '__main__':

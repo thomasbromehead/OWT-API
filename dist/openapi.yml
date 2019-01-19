@@ -9,7 +9,7 @@ info:
     url: https://ourproject.com
 
 servers:
-  - url: https://api.sunrise-sunset.org
+  - url: https://ourproject.org
     description: Production server
 
 paths:
@@ -40,14 +40,15 @@ paths:
         summary: "Get a token"
         description: "Access protected routes without having to login again, expiration time is 10 minutes"
         operationId: createToken
-      200:
-        description: "Token Generated, authenticate first then get token"
-        content:
-          application/json:
-            schema:
-              $ref:
+      responses:
+        200:
+          description: "Token Generated"
+          content:
+            application/json:
+              schema: 
+                $ref: "#/components/Token"
 #         {
-#   "token": "eyJhbGciOiJIUzUxMiIsImV4cCI6MTU0NzkwODk5MywiaWF0IjoxNTQ3OTA4MzkzfQ.eyJpZCI6MX0.4BKLFH3mwCQBCzn8afsF6GEicQC86hDwOkf1Rue5I-1EEaacPmOC7wC7BYN2gzeG4ZtG_GV8fo1G0kZO3CdEAQ"
+#   "token": s"eyJhbGciOiJIUzUxMiIsImV4cCI6MTU0NzkwODk5MywiaWF0IjoxNTQ3OTA4MzkzfQ.eyJpZCI6MX0.4BKLFH3mwCQBCzn8afsF6GEicQC86hDwOkf1Rue5I-1EEaacPmOC7wC7BYN2gzeG4ZtG_GV8fo1G0kZO3CdEAQ"
 # }
 
     /api/v1/contacts:
@@ -60,7 +61,7 @@ paths:
             content:
               application/json:
                 schema:
-                  $ref:
+                  $ref: "#/components/schemas/sun"
       post:
         summary: "Create a contact"
         description: "Create a contact, required fields are first name, last name and full name, rest is up to you.\n
@@ -122,6 +123,9 @@ paths:
             schema: 
               type: array
             example: "['javascript', 'python', 'sql']"
+        responses:
+          201:
+            description: "Contact created successfully"
       
     /api/v1/contact/{contactId}:
       get:
@@ -305,27 +309,15 @@ paths:
 
 
 components:
-  schemas:
-    SunriseSunsetResponse:
-      title: Response
-      type: object
-      properties:
-        user:
-          type: object
-          properties:
-            username:
-              type: string
-              description: username
-              example: 'johndoe'
-        status:
-          type: string
-          description: "Four possible statuses:\n
-            \n* `OK`: No errors occurred.
-            \n* `INVALID_REQUEST`: Either lat or lng parameters are missing or invalid.
-            \n* `INVALID_DATE`: The date parameter is missing or invalid;
-            \n* `UNKNOWN_ERROR`: The request could not be processed due to a server error. The request may succeed if you try again."
-          example: "OK"
+  Token:
+    type: "object"
+    properties:
+      token: 
+        type: "integer"
+        format: int64
 
-externalDocs:
+
+
+externalDocs: 
   description: Documentation and main site
   url: https://sunrise-sunset.org/api
